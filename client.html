@@ -11,7 +11,7 @@
 <h2>Dynamic WebSocket Chat</h2>
 <label>Enter Room ID: </label>
 <input type="text" id="roomIdInput" placeholder="Enter room ID">
-<button onclick="joinRoom()">Join Room</button>
+<button id="joinButton" onclick="joinRoom()">Join Room</button>
 
 <div id="chat"></div>
 <input type="text" id="messageInput" placeholder="Type a message...">
@@ -20,14 +20,28 @@
 <script>
     let stompClient = null;
     let roomId = null;
+    let joined = false;
+    // random user name
+    const user = "User " + Math.floor(Math.random() * 1000);
 
     function joinRoom() {
+        if (joined) {
+            alert("You have already joined a room.");
+            return;
+        }
+
         roomId = document.getElementById("roomIdInput").value;
         if (!roomId) {
             alert("Please enter a Room ID!");
             return;
         }
+
         connectWebSocket();
+        joined = true;
+
+        document.getElementById("joinButton").disabled = true;
+        document.getElementById("joinButton").innerText = "Joined";
+        document.getElementById("roomIdInput").disabled = true;
     }
 
     function connectWebSocket() {
@@ -54,7 +68,7 @@
 
         const input = document.getElementById("messageInput");
         const message = {
-            sender: "User" + Math.floor(Math.random() * 100),
+            sender: user,
             content: input.value
         };
         console.log('📤 Sending message:', message);
