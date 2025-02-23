@@ -1,0 +1,6 @@
+server:
+  port: 9999
+spring:
+  data:
+    redis:
+      port: 6379
