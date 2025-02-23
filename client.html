@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Room</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+</head>
+<body>
+<h2>Dynamic WebSocket Chat</h2>
+<label>Enter Room ID: </label>
+<input type="text" id="roomIdInput" placeholder="Enter room ID">
+<button onclick="joinRoom()">Join Room</button>
+
+<div id="chat"></div>
+<input type="text" id="messageInput" placeholder="Type a message...">
+<button onclick="sendMessage()">Send</button>
+
+<script>
+    let stompClient = null;
+    let roomId = null;
+
+    function joinRoom() {
+        roomId = document.getElementById("roomIdInput").value;
+        if (!roomId) {
+            alert("Please enter a Room ID!");
+            return;
+        }
+        connectWebSocket();
+    }
+
+    function connectWebSocket() {
+        const socket = new SockJS('http://localhost:9999/chat');
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, function (frame) {
+            console.log('✅ Connected to room: ' + roomId);
+
+            stompClient.subscribe(`/topic/room/${roomId}`, function (message) {
+                console.log('📩 Received message:', message.body);
+                const chatDiv = document.getElementById("chat");
+                const msg = JSON.parse(message.body);
+                chatDiv.innerHTML += `<p><strong>${msg.sender}:</strong> ${msg.content}</p>`;
+            });
+        });
+    }
+
+    function sendMessage() {
+        if (!stompClient || !roomId) {
+            alert("Please join a room first!");
+            return;
+        }
+
+        const input = document.getElementById("messageInput");
+        const message = {
+            sender: "User" + Math.floor(Math.random() * 100),
+            content: input.value
+        };
+        console.log('📤 Sending message:', message);
+        stompClient.send(`/app/chatroom/${roomId}`, {}, JSON.stringify(message));
+        input.value = "";
+    }
+</script>
+</body>
+</html>
