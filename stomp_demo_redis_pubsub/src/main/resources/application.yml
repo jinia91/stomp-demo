@@ -3,4 +3,4 @@ server:
 spring:
   data:
     redis:
-      port: 6379
+      port: 8882
